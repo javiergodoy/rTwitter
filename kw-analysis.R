@@ -19,62 +19,67 @@ library(calibrate)
 plot(x=table.authors$followers, y=table.authors$listed)
 textxy(table.authors$followers,table.authors$listed, table.authors$RealName, cx= 0.9, dcol="red")
 plot(x=table.authors$followers, y=table.authors$published)
-#textmining
 
 
 
+
+
+####textmining#####
+
+
+# import libraries
 library(tm)
 library(wordcloud)
-# obtiene el texto de los tweets
+
+# fetch the text of the tweets
 txt = table.tweets$text
 
-##### inicio limpieza de datos #####
-# remueve retweets
+##### data cleaning #####
+# remove retweets
 txtclean = gsub("(RT|via)((?:\\b\\W*@\\w+)+)", "", txt)
-# remove @otragente
+# remove @username
 txtclean = gsub("@\\w+", "", txtclean)
-# remueve simbolos de puntuación
+# remove punctuation
 txtclean = gsub("[[:punct:]]", "", txtclean)
-# remove números
+# remove numbers
 txtclean = gsub("[[:digit:]]", "", txtclean)
-# remueve links
+# remove links
 txtclean = gsub("http\\w+", "", txtclean)
-##### fin limpieza de datos #####
+##### data cleaning #####
 
-# construye un corpus
+#corpus
 corpus = Corpus(VectorSource(txtclean))
 
-# convierte a minúsculas
+# convert to lower
 corpus = tm_map(corpus, tolower)
-# remueve palabras vacías (stopwords) en español
+# remove stopwords (en español)
 corpus = tm_map(corpus, removeWords, c(stopwords("spanish"), "camila_vallejo"))
-# carga archivo de palabras vacías personalizada y lo convierte a ASCII
+# upload personalized stopwords list and convert it to ASCII
 sw <- readLines("~/stopwords.es.txt",encoding="UTF-8")
 sw = iconv(sw, to="ASCII//TRANSLIT")
-# remueve palabras vacías personalizada
+# remove personalized stopwords list
 corpus = tm_map(corpus, removeWords, sw)
-# remove espacios en blanco extras
+# remove extra white spaces
 corpus = tm_map(corpus, stripWhitespace)
 
-# crea una matriz de términos
+# create a corpus
 tdm <- TermDocumentMatrix(corpus)
 
-# convierte a una matriz
+# convert to matrix
 m = as.matrix(tdm)
 
-# conteo de palabras en orden decreciente
+# count words in decreasing order
 wf <- sort(rowSums(m),decreasing=TRUE)
 
-# crea un data frame con las palabras y sus frecuencias
+# create a dataframe with words and frecuencies
 dm <- data.frame(word = names(wf), freq=wf)
-# grafica la nube de palabras (wordcloud)
+
+# create a wordcloud
 wordcloud(dm$word, dm$freq, random.order=FALSE, colors=brewer.pal(8, "Dark2"))
 
 
 
-#crea un excel
+#create an excel file
 library(xlsx) #load the package
 write.xlsx(x = table.tweets, file = "mentions.twitter.xlsx",
            sheetName = "Tweets", row.names = FALSE)
-write.xlsx(x = table.authors, file = "authors.twitter.xlsx",
-           sheetName = "Authors", row.names = FALSE)
