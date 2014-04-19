@@ -6,7 +6,7 @@ load("~/OAuth.RData")
 registerTwitterOAuth(oauth)
 
 #look for a specific keywords and retrieve n results
-tweets = searchTwitter ("#cw13", n=1000)
+tweets = searchTwitter ("#keyword", n=1000)
 
 #save results in a table
 table.tweets  <- twListToDF(tweets)
